@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI RiskGuard | Fraud Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=60">
+</head>
+<body>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <!-- Clickable Logo - Returns to Home Page -->
+        <a href="/" class="logo-link">
+            <div class="logo-area">
+                <div class="logo-icon"></div>
+                <h2>AI RiskGuard</h2>
+            </div>
+        </a>
+
+        <div class="menu active" onclick="switchView('dashboard-view', this)">Dashboard</div>
+        <div class="menu" onclick="switchView('transactions-view', this)">Transactions</div>
+        <div class="menu" onclick="switchView('alerts-view', this)">Fraud Alerts</div>
+        <div class="menu" onclick="switchView('analysis-view', this)">Risk Analysis</div>
+        
+        <div class="sidebar-footer">
+            <div class="menu" onclick="showToast('Settings page coming soon!', 'info')">Settings</div>
+            <div class="menu" onclick="window.location.href='/'">Logout</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        
+        <!-- TOP NAVBAR -->
+        <div class="top-navbar">
+            <div class="search-bar">
+                <input type="text" placeholder="Search transactions, accounts, or alerts...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="nav-actions">
+                <button class="icon-btn" onclick="showToast('You have 3 unread notifications.', 'info')">
+                    🔔 <span class="badge-dot"></span>
+                </button>
+                <div class="user-profile">
+                    <div class="avatar">S</div>
+                    <div class="user-info">
+                        <span class="user-name">Shivanshu</span>
+                        <span class="user-role">Senior Analyst</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <h1 id="pageTitle">Fraud Detection Dashboard</h1>
+                <p id="pageSubtitle">AI-Based Multi-Model Financial Risk Monitoring</p>
+            </div>
+            <div class="status">
+                <span class="status-dot"></span>
+                System Online
+            </div>
+        </div>
+
+        <!-- VIEW 1: DASHBOARD -->
+        <div id="dashboard-view" class="view active">
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3B82F6;">💳</div>
+                    <div>
+                        <h3>Total Transactions</h3>
+                        <h2 id="totalTransactions">0</h2>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">⚠️</div>
+                    <div>
+                        <h3>Total Alerts</h3>
+                        <h2 id="totalAlerts">0</h2>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;">🚨</div>
+                    <div>
+                        <h3>High Risk</h3>
+                        <h2 id="highRisk">0</h2>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: rgba(245, 158, 11, 0.2); color: #F59E0B;">⚡</div>
+                    <div>
+                        <h3>Medium Risk</h3>
+                        <h2 id="mediumRisk">0</h2>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">✅</div>
+                    <div>
+                        <h3>Low Risk</h3>
+                        <h2 id="lowRisk">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                <div class="section" style="margin-bottom: 0;">
+                    <h2>Risk Distribution</h2>
+                    <div style="max-width: 300px; margin: 0 auto;">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </div>
+                <div class="section" style="margin-bottom: 0;">
+                    <h2>Live Activity Feed</h2>
+                    <div id="liveFeed" class="live-feed-container">
+                        <p style="color: var(--text-secondary); text-align: center; padding-top: 50px;">Waiting for incoming transactions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Analyze Transaction</h2>
+                
+                <div style="margin-bottom: 24px; display: flex; gap: 12px;">
+                    <button type="button" class="analyze-button" style="background: #10B981; box-shadow: none;" onclick="simulateSafe()">Simulate Safe Transaction</button>
+                    <button type="button" class="analyze-button" style="background: #EF4444; box-shadow: none;" onclick="simulateFraud()">Simulate Fraud Transaction</button>
+                </div>
+
+                <form id="predictionForm">
+                    <div class="form-grid">
+                        <div><label>Transaction ID</label><input type="text" id="transaction_id" placeholder="TXN_000003" required></div>
+                        <div><label>Amount</label><input type="number" id="amount" placeholder="500000" step="any" required></div>
+                        <div><label>Sender Balance</label><input type="number" id="oldbalanceOrg" placeholder="800000" step="any" required></div>
+                        <div><label>Receiver Balance</label><input type="number" id="oldbalanceDest" placeholder="1200000" step="any" required></div>
+                        <div>
+                            <label>Transaction Type</label>
+                            <select id="type">
+                                <option value="TRANSFER">TRANSFER</option>
+                                <option value="CASH_OUT">CASH_OUT</option>
+                                <option value="PAYMENT">PAYMENT</option>
+                                <option value="CASH_IN">CASH_IN</option>
+                                <option value="DEBIT">DEBIT</option>
+                            </select>
+                        </div>
+                        <div><label>Step</label><input type="number" id="step" placeholder="360" required></div>
+                        <div><label>Destination Account</label><input type="text" id="nameDest" placeholder="C17820769" required></div>
+                    </div>
+                    <button type="submit" class="analyze-button" id="analyzeBtn">
+                        <span class="btn-text">Analyze Transaction</span>
+                        <span class="btn-loader" style="display: none;">⏳ Analyzing...</span>
+                    </button>
+                </form>
+
+                <div id="predictionResult" class="prediction-result" style="display: none;">
+                    <h3>Prediction Result</h3>
+                    <div class="result-grid">
+                        <div><span>XGBoost Score</span><strong id="resultXgb">-</strong></div>
+                        <div><span>LSTM Score</span><strong id="resultLstm">-</strong></div>
+                        <div><span>Autoencoder Score</span><strong id="resultAe">-</strong></div>
+                        <div><span>Risk Score</span><strong id="resultRisk">-</strong></div>
+                        <div><span>Risk Level</span><strong id="resultRiskLevel">-</strong></div>
+                        <div><span>Decision</span><strong id="resultDecision">-</strong></div>
+                    </div>
+                    
+                    <div class="explanation">
+                        <h4>Why was this transaction flagged?</h4>
+                        <div style="height: 180px; margin-top: 15px;">
+                            <canvas id="shapChart"></canvas>
+                        </div>
+                        <ul id="explanationsList" style="margin-top: 15px;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: TRANSACTIONS -->
+        <div id="transactions-view" class="view">
+            <div class="section">
+                <div class="section-header">
+                    <h2>All Transactions (Last 100)</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="transactionSearch" placeholder="Search transactions..." class="table-search" onkeyup="filterTable('transactionsTable', this.value)">
+                        <button onclick="loadTransactions()">Refresh Data</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Step</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Risk Level</th>
+                                <th>Decision</th>
+                                <th>Analyst Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: FRAUD ALERTS -->
+        <div id="alerts-view" class="view">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Active Fraud Alerts</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="alertSearch" placeholder="Search alerts..." class="table-search" onkeyup="filterTable('alertsTable', this.value)">
+                        <button onclick="loadAlerts()">Refresh Alerts</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Risk Score</th>
+                                <th>Risk Level</th>
+                                <th>Action Required</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: RISK ANALYSIS -->
+        <div id="analysis-view" class="view">
+            <div class="section">
+                <h2>AI Model Architecture</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    This system uses an ensemble of three distinct machine learning models to evaluate transaction risk.
+                </p>
+                <div class="result-grid">
+                    <div>
+                        <span>XGBoost Classifier</span>
+                        <strong style="font-size: 16px;">Supervised Learning</strong>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 8px;">Trained on historical labeled fraud data. Excels at finding known fraud patterns.</p>
+                    </div>
+                    <div>
+                        <span>LSTM Network</span>
+                        <strong style="font-size: 16px;">Sequential Analysis</strong>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 8px;">Analyzes the previous 5 transactions of the destination account to detect suspicious behavioral sequences.</p>
+                    </div>
+                    <div>
+                        <span>Autoencoder</span>
+                        <strong style="font-size: 16px;">Anomaly Detection</strong>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 8px;">Unsupervised model. Flags transactions that deviate from normal statistical patterns (high reconstruction error).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2>Scoring Weights</h2>
+                <ul class="explanation" style="margin-top: 10px;">
+                    <li><strong>With History:</strong> 40% XGBoost + 30% LSTM + 30% Autoencoder</li>
+                    <li><strong>Without History:</strong> 57.14% XGBoost + 42.86% Autoencoder</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- WELCOME MODAL -->
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">🛡️</div>
+            <h2>Welcome to AI RiskGuard</h2>
+            <p>Your enterprise-grade multi-model fraud detection system is ready.</p>
+            <ul style="text-align: left; margin: 20px 0; color: #94A3B8; font-size: 14px;">
+                <li>✅ XGBoost, LSTM, and Autoencoder ensemble</li>
+                <li>✅ Real-time SHAP explainability</li>
+                <li>✅ Active Learning Feedback Loop</li>
+            </ul>
+            <button class="analyze-button" onclick="closeModal()">Enter Dashboard</button>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js?v=60"></script>
+</body>
+</html>
